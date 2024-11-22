@@ -7,3 +7,10 @@ export async function getTodosPosts() {
     const colecao = db.collection("posts");
     return colecao.find().toArray();
 }
+
+export async function criarPost(post) {
+    const db = conexao.db("imersao-instabytes");
+    const colecao = db.collection("posts");
+    return colecao.insertOne(post);
+    
+}

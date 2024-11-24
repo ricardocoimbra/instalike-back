@@ -1,5 +1,6 @@
 import fs from "fs";
-import { getTodosPosts, criarPost } from "../models/postsModel.js";
+import { getTodosPosts, criarPost, atualizarPost } from "../models/postsModel.js";
+import { gerarDescricaoComGemini, gerarTextoAlternativoComGemini } from "../services/geminiService.js";
 
 export async function listarPosts(req, res) {
     try {
@@ -36,5 +37,28 @@ export async function uploadImagem(req, res) {
     } catch (error) {
         console.error(error);
         res.status(500).send({ message: "Ocorreu um erro ao criar o post." });
+    }
+}
+
+export async function atualizarNovoPost(req, res) {
+    const id = req.params.id;
+    const urlImagem = `http://localhost:5000/${id}.png`;
+    
+    try {
+        const imgBuffer = fs.readFileSync(`./uploads/${id}.png`);
+        const descricao = await gerarDescricaoComGemini(imgBuffer);
+        const alt = await gerarTextoAlternativoComGemini(imgBuffer);
+    
+        const post = { 
+            imgUrl: urlImagem, 
+            descricao: descricao,
+            alt: alt
+        };
+
+        const postCriado = await atualizarPost(id, post);
+        res.status(200).send(postCriado);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: "Ocorreu um erro ao buscar os posts." });
     }
 }
